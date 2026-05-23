@@ -21,8 +21,9 @@ const vouchersData: Record<string, any> = {
 
 export const dynamic = "force-static";
 
-export async function GET(request: Request, { params }: { params: { code: string } }) {
-  const voucher = vouchersData[params.code];
+export async function GET(_request: Request, { params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  const voucher = vouchersData[code];
 
   if (!voucher) {
     return NextResponse.json({ error: "Voucher not found" }, { status: 404 });
