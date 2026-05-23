@@ -19,16 +19,14 @@ const vouchersData: Record<string, any> = {
   },
 };
 
+export const dynamic = "force-static";
+
 export async function GET(request: Request, { params }: { params: { code: string } }) {
-  try {
-    const voucher = vouchersData[params.code];
+  const voucher = vouchersData[params.code];
 
-    if (!voucher) {
-      return NextResponse.json({ error: "Voucher not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(voucher);
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  if (!voucher) {
+    return NextResponse.json({ error: "Voucher not found" }, { status: 404 });
   }
+
+  return NextResponse.json(voucher);
 }
