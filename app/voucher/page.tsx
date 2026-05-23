@@ -1,5 +1,3 @@
-'use client';
-
 export default function TestVoucher() {
   const voucher = {
     id: "009675b8-a55e-4da1-b7a8-0c49db5cd25d",
