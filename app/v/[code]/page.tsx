@@ -1,61 +1,40 @@
-'use client';
+const vouchersData: Record<string, any> = {
+  "e70aabce7e379c1a3fbfa6617a22b683": {
+    id: "009675b8-a55e-4da1-b7a8-0c49db5cd25d",
+    code: "e70aabce7e379c1a3fbfa6617a22b683",
+    status: "UNUSED",
+    batch: {
+      id: "a6c63ea8-55bf-4949-812a-3c7ac0ef0b28",
+      voucherType: "Gratis Asahi Bowl",
+      description: "Kostenlos eine Asahi Bowl genießen!",
+    },
+    cafe: {
+      id: "894a4cc8-5e2b-4543-bdc9-7ffe90f736ca",
+      name: "Lila Wiesbaden",
+      logoUrl: "https://via.placeholder.com/200",
+      primaryColor: "#8B4C9B",
+    },
+  },
+};
 
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+export default async function VoucherPage({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  const voucher = vouchersData[code];
 
-interface VoucherData {
-  id: string;
-  code: string;
-  status: string;
-  batch: {
-    voucherType: string;
-    description?: string;
-  };
-  cafe: {
-    name: string;
-    logoUrl?: string;
-    primaryColor?: string;
-  };
-}
-
-export default function VoucherPage() {
-  const params = useParams();
-  const code = params.code as string;
-  const [voucher, setVoucher] = useState<VoucherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const fetchVoucher = async () => {
-      try {
-        const res = await fetch(`/api/vouchers/${code}`);
-        if (!res.ok) throw new Error('Voucher not found');
-        const data = await res.json();
-        setVoucher(data);
-      } catch (err) {
-        setError(String(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVoucher();
-  }, [code]);
-
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  if (error || !voucher)
+  if (!voucher) {
     return (
       <div className="flex items-center justify-center h-screen text-red-500">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Voucher not found</h1>
-          <p>{error}</p>
         </div>
       </div>
     );
+  }
 
   return (
     <div
       className="flex flex-col items-center justify-center min-h-screen p-4"
-      style={{ backgroundColor: voucher.cafe.primaryColor || '#8B4C9B' }}
+      style={{ backgroundColor: voucher.cafe.primaryColor || "#8B4C9B" }}
     >
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
         {voucher.cafe.logoUrl && (
@@ -70,35 +49,32 @@ export default function VoucherPage() {
           <p className="text-xl font-semibold" style={{ color: voucher.cafe.primaryColor }}>
             {voucher.batch.voucherType}
           </p>
-          {voucher.batch.description && <p className="text-sm text-gray-600 mt-2">{voucher.batch.description}</p>}
+          {voucher.batch.description && (
+            <p className="text-sm text-gray-600 mt-2">{voucher.batch.description}</p>
+          )}
         </div>
 
-        {voucher.status === 'UNUSED' && (
+        <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+          <p className="text-xs text-gray-600 mb-2">QR-Code zum Scannen:</p>
+          <img src="/qr-code.png" alt="QR Code" className="w-48 h-48 mx-auto" />
+        </div>
+
+        {voucher.status === "UNUSED" && (
           <div>
-            <button
-              onClick={() => fetch(`/api/passes/apple/${code}`).then((r) => r.blob()).then((blob) => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'gutschein.pkpass';
-                a.click();
-              })}
-              className="w-full py-3 px-4 rounded-lg font-semibold text-white mb-3"
-              style={{ backgroundColor: voucher.cafe.primaryColor }}
-            >
+            <button className="w-full py-3 px-4 rounded-lg font-semibold text-white mb-3" style={{ backgroundColor: voucher.cafe.primaryColor }}>
               Zur Apple Wallet hinzufügen
             </button>
             <p className="text-xs text-gray-500">Zeige diesen Gutschein im Café vor!</p>
           </div>
         )}
 
-        {voucher.status === 'ACTIVATED' && (
+        {voucher.status === "ACTIVATED" && (
           <div className="p-4 bg-green-100 text-green-700 rounded-lg">
             <p className="font-semibold">✅ Bereits zur Wallet hinzugefügt</p>
           </div>
         )}
 
-        {voucher.status === 'REDEEMED' && (
+        {voucher.status === "REDEEMED" && (
           <div className="p-4 bg-gray-100 text-gray-700 rounded-lg">
             <p className="font-semibold">✓ Dieser Gutschein wurde bereits eingelöst</p>
           </div>
